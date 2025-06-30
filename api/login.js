@@ -11,7 +11,16 @@ export default async function handler(req, res) {
     return res.status(405).json({ success: false, error: 'Method not allowed' });
   }
 
-  const { email, password } = req.body || {};
+  // Parse JSON body manually for Vercel
+  let body = req.body;
+  if (!body) {
+    const buffers = [];
+    for await (const chunk of req) {
+      buffers.push(chunk);
+    }
+    body = JSON.parse(Buffer.concat(buffers).toString());
+  }
+  const { email, password } = body || {};
   if (!email || !password) {
     return res.status(400).json({ success: false, error: 'Missing email or password' });
   }
@@ -28,4 +37,4 @@ export default async function handler(req, res) {
   } else {
     res.json({ success: false, error: 'Invalid credentials' });
   }
-} 
+}
